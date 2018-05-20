@@ -202,11 +202,14 @@ class CondaPackageCheck(object):
 
     def check_for_bat_and_exe(self):
         """Check that both .bat and .exe files don't exist in the same package."""
-        bat_files = [filepath for filepath in self.paths if filepath.endswith('.bat')]
-        exe_files = [filepath for filepath in self.paths if filepath.endswith('.exe')]
+        bat_files = set([os.path.splitext(os.path.basename(filepath))[0] for filepath in self.paths if
+                     filepath.startswith('Scripts') and filepath.endswith('.bat')])
+        exe_files = set([os.path.splitext(os.path.basename(filepath))[0] for filepath in self.paths if
+                     filepath.startswith('Scripts') and filepath.endswith('.exe')])
 
-        if len(bat_files) > 0 and len(exe_files) > 0:
-            return Error(self.path, 'C1127', 'Found both .bat and .exe files in executable directory')
+        both = bat_files & exe_files
+        if both:
+            return Error(self.path, 'C1127', 'Found both .bat and .exe files in executable directory ({})'.format(both))
 
     @property
     def prefix_file(self):
